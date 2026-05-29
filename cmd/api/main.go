@@ -84,5 +84,23 @@ func main() {
 		return c.JSON(jsonResp)
 	})
 
+	app.Post("/webhooks/marketplace/revoke", func(c fiber.Ctx) error {
+		var req struct {
+			UserIDs []string `json:"userIds"`
+		}
+		if err := c.Bind().Body(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+		}
+
+		resp, err := service.NewRevoke(entitlementRepo, entManager).RevokeEntitlement(c.Context(), &service.RevokeEntitlementRequest{
+			UserIDs: req.UserIDs,
+		})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+
+		return c.JSON(resp)
+	})
+
 	log.Fatal(app.Listen(":3000"))
 }
