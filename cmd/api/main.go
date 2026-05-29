@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -29,6 +30,7 @@ func main() {
 	storeEventRepo := repositories.NewStoreEventRepository(entManager)
 
 	webhookService := service.NewWebhookStoreService(storeEventRepo, entitlementRepo, entManager)
+	entitlementService := service.NewEntitlementService(entitlementRepo)
 
 	app := fiber.New()
 
@@ -56,6 +58,30 @@ func main() {
 		}
 
 		return c.JSON(resp)
+	})
+
+	app.Get("/users/:id/entitlement", func(c fiber.Ctx) error {
+		userID := c.Params("id")
+
+		resp, err := entitlementService.GetEntitlement(c.Context(), &service.GetEntitlementRequest{UserID: userID})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+
+		jsonResp := struct {
+			Active        bool   `json:"active"`
+			Source        string `json:"source"`
+			ExpiresAt     string `json:"expiresAt"`
+			LastChangedAt string `json:"lastChangedAt"`
+			Reason        string `json:"reason"`
+		}{
+			Active:        resp.Entitlement.IsActive,
+			Source:        string(resp.Entitlement.Source),
+			ExpiresAt:     resp.Entitlement.ExpiresAt.UTC().Format(time.RFC3339),
+			LastChangedAt: resp.Entitlement.LastChangedAt.UTC().Format(time.RFC3339),
+			Reason:        resp.Entitlement.Reason,
+		}
+		return c.JSON(jsonResp)
 	})
 
 	log.Fatal(app.Listen(":3000"))
