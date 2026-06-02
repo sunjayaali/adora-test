@@ -23,7 +23,7 @@ import (
 )
 
 func main() {
-	db := lo.Must(sql.Open("pgx", "postgres://postgres:postgres@localhost:5432/adora?sslmode=disable"))
+	db := lo.Must(sql.Open("pgx", "postgres://postgres:postgres@postgres:5432/adora?sslmode=disable"))
 	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, db)))
 	defer client.Close()
 
@@ -127,8 +127,6 @@ func main() {
 
 	go func() {
 		StartScheduler(ctx, pollWorker)
-		StartScheduler(ctx, pollWorker)
-		StartScheduler(ctx, pollWorker)
 	}()
 
 	shutdown := make(chan os.Signal, 1)
@@ -142,7 +140,10 @@ func main() {
 }
 
 func StartScheduler(ctx context.Context, worker *service.PollWorker) {
-	ticker := time.NewTicker(10 * time.Second)
+	interval := 5 * time.Minute
+	// Use a shorter interval for testing purposes
+	// interval := 10 * time.Second
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
