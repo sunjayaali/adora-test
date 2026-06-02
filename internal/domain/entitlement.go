@@ -20,4 +20,5 @@ type Entitlement struct {
 	LastChangedAt   *time.Time
 	Reason          string
 	LastEventTimeMs int64
+	LastPolledAt    *time.Time
 }

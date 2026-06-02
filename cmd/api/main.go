@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"entgo.io/ent/dialect"
@@ -16,6 +18,8 @@ import (
 	"adora-test/internal/data"
 	"adora-test/internal/repositories"
 	"adora-test/internal/service"
+	"adora-test/internal/service/logging"
+	mockcarrier "adora-test/internal/service/mock_carrier"
 )
 
 func main() {
@@ -31,6 +35,18 @@ func main() {
 
 	webhookService := service.NewWebhookStoreService(storeEventRepo, entitlementRepo, entManager)
 	entitlementService := service.NewEntitlementService(entitlementRepo)
+
+	ts := lo.Must(mockcarrier.NewServer())
+	defer ts.Close()
+
+	carrierClient := service.NewCarrierClient(ts.Client(), ts.URL)
+	var poller service.Poller
+	{
+		poller = service.NewPoll(carrierClient, entitlementRepo, entManager)
+		poller = logging.NewPoll(poller)
+	}
+
+	pollWorker := service.NewPollWorker(entManager, entitlementRepo, poller)
 
 	app := fiber.New()
 
@@ -102,5 +118,41 @@ func main() {
 		return c.JSON(resp)
 	})
 
-	log.Fatal(app.Listen(":3000"))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		lo.Must0(app.Listen(":3000"))
+	}()
+
+	go func() {
+		StartScheduler(ctx, pollWorker)
+		StartScheduler(ctx, pollWorker)
+		StartScheduler(ctx, pollWorker)
+	}()
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(shutdown)
+
+	<-shutdown
+	cancel()
+
+	lo.Must0(app.ShutdownWithTimeout(30 * time.Second))
+}
+
+func StartScheduler(ctx context.Context, worker *service.PollWorker) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		_ = worker.Run(ctx)
+		<-ticker.C
+	}
 }

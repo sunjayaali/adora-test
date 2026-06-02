@@ -18,6 +18,7 @@ func (Entitlement) Fields() []ent.Field {
 		field.Time("expires_at"),
 		field.Time("last_changed_at").Optional().Nillable(),
 		field.String("reason"),
+		field.Time("last_polled_at").Optional().Nillable(),
 	}
 }
 

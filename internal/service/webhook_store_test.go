@@ -1,4 +1,4 @@
-package service
+package service_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	datamock "adora-test/internal/data/mocking"
 	"adora-test/internal/domain"
+	"adora-test/internal/service"
 	"adora-test/internal/service/mocking"
 )
 
@@ -20,7 +21,7 @@ type WebhookStoreServiceTestSuite struct {
 	entitlementRepo *mocking.EntitlementRepository
 	transactor      *datamock.Transactor
 
-	service *WebhookStoreService
+	service *service.WebhookStoreService
 }
 
 func (suite *WebhookStoreServiceTestSuite) SetupTest() {
@@ -28,7 +29,7 @@ func (suite *WebhookStoreServiceTestSuite) SetupTest() {
 	suite.entitlementRepo = mocking.NewEntitlementRepository(suite.T())
 	suite.transactor = datamock.NewTransactor(suite.T())
 
-	suite.service = NewWebhookStoreService(
+	suite.service = service.NewWebhookStoreService(
 		suite.storeEventRepo,
 		suite.entitlementRepo,
 		suite.transactor,
@@ -96,13 +97,13 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_NewEvent() {
 		Insert(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.SourceStore, entitlement.Source)
 			suite.Require().Equal("INITIAL_PURCHASE", entitlement.Reason)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event1",
 		UserID:      "user1",
 		Type:        "INITIAL_PURCHASE",
@@ -129,7 +130,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_DuplicateEvent() {
 			}, nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event1",
 		UserID:      "user1",
 		Type:        "INITIAL_PURCHASE",
@@ -171,7 +172,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_NotDuplicateEvent() {
 			}, nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "INITIAL_PURCHASE",
@@ -222,14 +223,14 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementInsert() {
 		Insert(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.Source(service.EntitlementSourceStore), entitlement.Source)
 			suite.Require().Equal("INITIAL_PURCHASE", entitlement.Reason)
 			suite.Require().True(entitlement.IsActive)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event1",
 		UserID:      "user1",
 		Type:        "INITIAL_PURCHASE",
@@ -276,7 +277,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementUpdate() {
 		RunAndReturn(func(ctx context.Context, userID string) (*domain.Entitlement, error) {
 			return &domain.Entitlement{
 				UserID:   "user1",
-				Source:   domain.Source(EntitlementSourceStore),
+				Source:   domain.Source(service.EntitlementSourceStore),
 				Reason:   "INITIAL_PURCHASE",
 				IsActive: true,
 			}, nil
@@ -285,14 +286,14 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementUpdate() {
 		Update(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.Source(service.EntitlementSourceStore), entitlement.Source)
 			suite.Require().Equal("CANCELLATION", entitlement.Reason)
 			suite.Require().False(entitlement.IsActive)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "CANCELLATION",
@@ -339,7 +340,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementUpdate_Cancella
 		RunAndReturn(func(ctx context.Context, userID string) (*domain.Entitlement, error) {
 			return &domain.Entitlement{
 				UserID:   "user1",
-				Source:   domain.Source(EntitlementSourceStore),
+				Source:   domain.Source(service.EntitlementSourceStore),
 				Reason:   "INITIAL_PURCHASE",
 				IsActive: true,
 			}, nil
@@ -348,14 +349,14 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementUpdate_Cancella
 		Update(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.Source(service.EntitlementSourceStore), entitlement.Source)
 			suite.Require().Equal("CANCELLATION", entitlement.Reason)
 			suite.Require().False(entitlement.IsActive)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "CANCELLATION",
@@ -402,7 +403,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementUpdate_Change()
 		RunAndReturn(func(ctx context.Context, userID string) (*domain.Entitlement, error) {
 			return &domain.Entitlement{
 				UserID:   "user1",
-				Source:   domain.Source(EntitlementSourceStore),
+				Source:   domain.Source(service.EntitlementSourceStore),
 				Reason:   "CANCELLATION",
 				IsActive: true,
 			}, nil
@@ -417,7 +418,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_EntitlementUpdate_Change()
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "INITIAL_PURCHASE",
@@ -464,7 +465,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_ToCancellation() {
 		RunAndReturn(func(ctx context.Context, userID string) (*domain.Entitlement, error) {
 			return &domain.Entitlement{
 				UserID:   "user1",
-				Source:   domain.Source(EntitlementSourceStore),
+				Source:   domain.Source(service.EntitlementSourceStore),
 				Reason:   "INITIAL_PURCHASE",
 				IsActive: true,
 			}, nil
@@ -473,14 +474,14 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_ToCancellation() {
 		Update(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.Source(service.EntitlementSourceStore), entitlement.Source)
 			suite.Require().Equal("CANCELLATION", entitlement.Reason)
 			suite.Require().False(entitlement.IsActive)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "CANCELLATION",
@@ -526,7 +527,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_ToRenewal() {
 		RunAndReturn(func(ctx context.Context, userID string) (*domain.Entitlement, error) {
 			return &domain.Entitlement{
 				UserID:   "user1",
-				Source:   domain.Source(EntitlementSourceStore),
+				Source:   domain.Source(service.EntitlementSourceStore),
 				Reason:   "CANCELLATION",
 				IsActive: false,
 			}, nil
@@ -535,14 +536,14 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_ToRenewal() {
 		Update(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.Source(service.EntitlementSourceStore), entitlement.Source)
 			suite.Require().Equal("RENEWAL", entitlement.Reason)
 			suite.Require().True(entitlement.IsActive)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "RENEWAL",
@@ -588,7 +589,7 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_ToUncancellation() {
 		RunAndReturn(func(ctx context.Context, userID string) (*domain.Entitlement, error) {
 			return &domain.Entitlement{
 				UserID:   "user1",
-				Source:   domain.Source(EntitlementSourceStore),
+				Source:   domain.Source(service.EntitlementSourceStore),
 				Reason:   "CANCELLATION",
 				IsActive: false,
 			}, nil
@@ -597,14 +598,14 @@ func (suite *WebhookStoreServiceTestSuite) TestIngest_ToUncancellation() {
 		Update(mock.Anything, mock.Anything).
 		RunAndReturn(func(ctx context.Context, entitlement *domain.Entitlement) error {
 			suite.Require().Equal("user1", entitlement.UserID)
-			suite.Require().Equal(domain.Source(EntitlementSourceStore), entitlement.Source)
+			suite.Require().Equal(domain.Source(service.EntitlementSourceStore), entitlement.Source)
 			suite.Require().Equal("UN_CANCELLATION", entitlement.Reason)
 			suite.Require().True(entitlement.IsActive)
 
 			return nil
 		})
 
-	resp, err := suite.service.Ingest(context.Background(), &IngestStoreWebhookRequest{
+	resp, err := suite.service.Ingest(context.Background(), &service.IngestStoreWebhookRequest{
 		EventID:     "event2",
 		UserID:      "user1",
 		Type:        "UN_CANCELLATION",

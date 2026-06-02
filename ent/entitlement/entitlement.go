@@ -23,6 +23,8 @@ const (
 	FieldLastChangedAt = "last_changed_at"
 	// FieldReason holds the string denoting the reason field in the database.
 	FieldReason = "reason"
+	// FieldLastPolledAt holds the string denoting the last_polled_at field in the database.
+	FieldLastPolledAt = "last_polled_at"
 	// Table holds the table name of the entitlement in the database.
 	Table = "entitlements"
 )
@@ -36,6 +38,7 @@ var Columns = []string{
 	FieldExpiresAt,
 	FieldLastChangedAt,
 	FieldReason,
+	FieldLastPolledAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -84,4 +87,9 @@ func ByLastChangedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByReason orders the results by the reason field.
 func ByReason(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReason, opts...).ToFunc()
+}
+
+// ByLastPolledAt orders the results by the last_polled_at field.
+func ByLastPolledAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastPolledAt, opts...).ToFunc()
 }

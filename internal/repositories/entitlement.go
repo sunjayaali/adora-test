@@ -4,13 +4,17 @@ import (
 	"context"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/pkg/errors"
 
 	"adora-test/ent"
 	"adora-test/ent/entitlement"
 	"adora-test/internal/data"
 	"adora-test/internal/domain"
+	"adora-test/internal/service"
 )
+
+var _ service.EntitlementRepository = (*Entitlement)(nil)
 
 type Entitlement struct {
 	manager *data.EntManager
@@ -67,6 +71,54 @@ func (e Entitlement) Update(ctx context.Context, entitlement *domain.Entitlement
 	return nil
 }
 
+func (e Entitlement) ClaimCarrierEntitlements(ctx context.Context, limit int) ([]*domain.Entitlement, error) {
+	client := e.manager.Client(ctx)
+
+	rows, err := client.Entitlement.
+		Query().
+		Where(
+			entitlement.SourceEQ(string(domain.SourceCarrier)),
+			entitlement.Or(
+				entitlement.LastPolledAtIsNil(),
+				entitlement.LastPolledAtLT(time.Now().Add(-5*time.Minute)),
+			),
+		).
+		ForUpdate(sql.WithLockAction(sql.SkipLocked)).
+		Limit(limit).
+		All(ctx)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	if len(rows) == 0 {
+		return []*domain.Entitlement{}, nil
+	}
+
+	now := time.Now().UTC()
+
+	ids := make([]int, 0, len(rows))
+	for _, r := range rows {
+		ids = append(ids, r.ID)
+	}
+
+	if _, err = client.Entitlement.
+		Update().
+		Where(entitlement.IDIn(ids...)).
+		SetLastPolledAt(now).
+		Save(ctx); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	result := make([]*domain.Entitlement, 0, len(rows))
+	for _, r := range rows {
+		d := e.toDomain(r)
+		d.LastPolledAt = &now
+		result = append(result, d)
+	}
+
+	return result, nil
+}
+
 func (e Entitlement) toDomain(row *ent.Entitlement) *domain.Entitlement {
 	return &domain.Entitlement{
 		ID:            row.ID,
@@ -76,5 +128,6 @@ func (e Entitlement) toDomain(row *ent.Entitlement) *domain.Entitlement {
 		ExpiresAt:     row.ExpiresAt,
 		LastChangedAt: row.LastChangedAt,
 		Reason:        row.Reason,
+		LastPolledAt:  row.LastPolledAt,
 	}
 }

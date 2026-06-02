@@ -118,6 +118,26 @@ func (_u *EntitlementUpdate) SetNillableReason(v *string) *EntitlementUpdate {
 	return _u
 }
 
+// SetLastPolledAt sets the "last_polled_at" field.
+func (_u *EntitlementUpdate) SetLastPolledAt(v time.Time) *EntitlementUpdate {
+	_u.mutation.SetLastPolledAt(v)
+	return _u
+}
+
+// SetNillableLastPolledAt sets the "last_polled_at" field if the given value is not nil.
+func (_u *EntitlementUpdate) SetNillableLastPolledAt(v *time.Time) *EntitlementUpdate {
+	if v != nil {
+		_u.SetLastPolledAt(*v)
+	}
+	return _u
+}
+
+// ClearLastPolledAt clears the value of the "last_polled_at" field.
+func (_u *EntitlementUpdate) ClearLastPolledAt() *EntitlementUpdate {
+	_u.mutation.ClearLastPolledAt()
+	return _u
+}
+
 // Mutation returns the EntitlementMutation object of the builder.
 func (_u *EntitlementUpdate) Mutation() *EntitlementMutation {
 	return _u.mutation
@@ -179,6 +199,12 @@ func (_u *EntitlementUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.Reason(); ok {
 		_spec.SetField(entitlement.FieldReason, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LastPolledAt(); ok {
+		_spec.SetField(entitlement.FieldLastPolledAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastPolledAtCleared() {
+		_spec.ClearField(entitlement.FieldLastPolledAt, field.TypeTime)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -290,6 +316,26 @@ func (_u *EntitlementUpdateOne) SetNillableReason(v *string) *EntitlementUpdateO
 	return _u
 }
 
+// SetLastPolledAt sets the "last_polled_at" field.
+func (_u *EntitlementUpdateOne) SetLastPolledAt(v time.Time) *EntitlementUpdateOne {
+	_u.mutation.SetLastPolledAt(v)
+	return _u
+}
+
+// SetNillableLastPolledAt sets the "last_polled_at" field if the given value is not nil.
+func (_u *EntitlementUpdateOne) SetNillableLastPolledAt(v *time.Time) *EntitlementUpdateOne {
+	if v != nil {
+		_u.SetLastPolledAt(*v)
+	}
+	return _u
+}
+
+// ClearLastPolledAt clears the value of the "last_polled_at" field.
+func (_u *EntitlementUpdateOne) ClearLastPolledAt() *EntitlementUpdateOne {
+	_u.mutation.ClearLastPolledAt()
+	return _u
+}
+
 // Mutation returns the EntitlementMutation object of the builder.
 func (_u *EntitlementUpdateOne) Mutation() *EntitlementMutation {
 	return _u.mutation
@@ -381,6 +427,12 @@ func (_u *EntitlementUpdateOne) sqlSave(ctx context.Context) (_node *Entitlement
 	}
 	if value, ok := _u.mutation.Reason(); ok {
 		_spec.SetField(entitlement.FieldReason, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.LastPolledAt(); ok {
+		_spec.SetField(entitlement.FieldLastPolledAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastPolledAtCleared() {
+		_spec.ClearField(entitlement.FieldLastPolledAt, field.TypeTime)
 	}
 	_node = &Entitlement{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -28,7 +28,9 @@ type Entitlement struct {
 	// LastChangedAt holds the value of the "last_changed_at" field.
 	LastChangedAt *time.Time `json:"last_changed_at,omitempty"`
 	// Reason holds the value of the "reason" field.
-	Reason       string `json:"reason,omitempty"`
+	Reason string `json:"reason,omitempty"`
+	// LastPolledAt holds the value of the "last_polled_at" field.
+	LastPolledAt *time.Time `json:"last_polled_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -43,7 +45,7 @@ func (*Entitlement) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case entitlement.FieldUserID, entitlement.FieldSource, entitlement.FieldReason:
 			values[i] = new(sql.NullString)
-		case entitlement.FieldExpiresAt, entitlement.FieldLastChangedAt:
+		case entitlement.FieldExpiresAt, entitlement.FieldLastChangedAt, entitlement.FieldLastPolledAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -103,6 +105,13 @@ func (_m *Entitlement) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Reason = value.String
 			}
+		case entitlement.FieldLastPolledAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_polled_at", values[i])
+			} else if value.Valid {
+				_m.LastPolledAt = new(time.Time)
+				*_m.LastPolledAt = value.Time
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -158,6 +167,11 @@ func (_m *Entitlement) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("reason=")
 	builder.WriteString(_m.Reason)
+	builder.WriteString(", ")
+	if v := _m.LastPolledAt; v != nil {
+		builder.WriteString("last_polled_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

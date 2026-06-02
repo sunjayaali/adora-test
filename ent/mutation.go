@@ -41,6 +41,7 @@ type EntitlementMutation struct {
 	expires_at      *time.Time
 	last_changed_at *time.Time
 	reason          *string
+	last_polled_at  *time.Time
 	clearedFields   map[string]struct{}
 	done            bool
 	oldValue        func(context.Context) (*Entitlement, error)
@@ -374,6 +375,55 @@ func (m *EntitlementMutation) ResetReason() {
 	m.reason = nil
 }
 
+// SetLastPolledAt sets the "last_polled_at" field.
+func (m *EntitlementMutation) SetLastPolledAt(t time.Time) {
+	m.last_polled_at = &t
+}
+
+// LastPolledAt returns the value of the "last_polled_at" field in the mutation.
+func (m *EntitlementMutation) LastPolledAt() (r time.Time, exists bool) {
+	v := m.last_polled_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastPolledAt returns the old "last_polled_at" field's value of the Entitlement entity.
+// If the Entitlement object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntitlementMutation) OldLastPolledAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastPolledAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastPolledAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastPolledAt: %w", err)
+	}
+	return oldValue.LastPolledAt, nil
+}
+
+// ClearLastPolledAt clears the value of the "last_polled_at" field.
+func (m *EntitlementMutation) ClearLastPolledAt() {
+	m.last_polled_at = nil
+	m.clearedFields[entitlement.FieldLastPolledAt] = struct{}{}
+}
+
+// LastPolledAtCleared returns if the "last_polled_at" field was cleared in this mutation.
+func (m *EntitlementMutation) LastPolledAtCleared() bool {
+	_, ok := m.clearedFields[entitlement.FieldLastPolledAt]
+	return ok
+}
+
+// ResetLastPolledAt resets all changes to the "last_polled_at" field.
+func (m *EntitlementMutation) ResetLastPolledAt() {
+	m.last_polled_at = nil
+	delete(m.clearedFields, entitlement.FieldLastPolledAt)
+}
+
 // Where appends a list predicates to the EntitlementMutation builder.
 func (m *EntitlementMutation) Where(ps ...predicate.Entitlement) {
 	m.predicates = append(m.predicates, ps...)
@@ -408,7 +458,7 @@ func (m *EntitlementMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EntitlementMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.user_id != nil {
 		fields = append(fields, entitlement.FieldUserID)
 	}
@@ -426,6 +476,9 @@ func (m *EntitlementMutation) Fields() []string {
 	}
 	if m.reason != nil {
 		fields = append(fields, entitlement.FieldReason)
+	}
+	if m.last_polled_at != nil {
+		fields = append(fields, entitlement.FieldLastPolledAt)
 	}
 	return fields
 }
@@ -447,6 +500,8 @@ func (m *EntitlementMutation) Field(name string) (ent.Value, bool) {
 		return m.LastChangedAt()
 	case entitlement.FieldReason:
 		return m.Reason()
+	case entitlement.FieldLastPolledAt:
+		return m.LastPolledAt()
 	}
 	return nil, false
 }
@@ -468,6 +523,8 @@ func (m *EntitlementMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldLastChangedAt(ctx)
 	case entitlement.FieldReason:
 		return m.OldReason(ctx)
+	case entitlement.FieldLastPolledAt:
+		return m.OldLastPolledAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Entitlement field %s", name)
 }
@@ -519,6 +576,13 @@ func (m *EntitlementMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetReason(v)
 		return nil
+	case entitlement.FieldLastPolledAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastPolledAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Entitlement field %s", name)
 }
@@ -552,6 +616,9 @@ func (m *EntitlementMutation) ClearedFields() []string {
 	if m.FieldCleared(entitlement.FieldLastChangedAt) {
 		fields = append(fields, entitlement.FieldLastChangedAt)
 	}
+	if m.FieldCleared(entitlement.FieldLastPolledAt) {
+		fields = append(fields, entitlement.FieldLastPolledAt)
+	}
 	return fields
 }
 
@@ -568,6 +635,9 @@ func (m *EntitlementMutation) ClearField(name string) error {
 	switch name {
 	case entitlement.FieldLastChangedAt:
 		m.ClearLastChangedAt()
+		return nil
+	case entitlement.FieldLastPolledAt:
+		m.ClearLastPolledAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Entitlement nullable field %s", name)
@@ -594,6 +664,9 @@ func (m *EntitlementMutation) ResetField(name string) error {
 		return nil
 	case entitlement.FieldReason:
 		m.ResetReason()
+		return nil
+	case entitlement.FieldLastPolledAt:
+		m.ResetLastPolledAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Entitlement field %s", name)

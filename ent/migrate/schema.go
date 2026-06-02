@@ -17,6 +17,7 @@ var (
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "last_changed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "reason", Type: field.TypeString},
+		{Name: "last_polled_at", Type: field.TypeTime, Nullable: true},
 	}
 	// EntitlementsTable holds the schema information for the "entitlements" table.
 	EntitlementsTable = &schema.Table{

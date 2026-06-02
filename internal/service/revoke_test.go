@@ -41,6 +41,7 @@ func (suite *RevokeTestSuite) TestRevokeEntitlement_Success() {
 			return &domain.Entitlement{
 				UserID:   userID,
 				IsActive: true,
+				Source:   domain.SourceMarketplace,
 			}, nil
 		})
 

@@ -64,6 +64,20 @@ func (_c *EntitlementCreate) SetReason(v string) *EntitlementCreate {
 	return _c
 }
 
+// SetLastPolledAt sets the "last_polled_at" field.
+func (_c *EntitlementCreate) SetLastPolledAt(v time.Time) *EntitlementCreate {
+	_c.mutation.SetLastPolledAt(v)
+	return _c
+}
+
+// SetNillableLastPolledAt sets the "last_polled_at" field if the given value is not nil.
+func (_c *EntitlementCreate) SetNillableLastPolledAt(v *time.Time) *EntitlementCreate {
+	if v != nil {
+		_c.SetLastPolledAt(*v)
+	}
+	return _c
+}
+
 // Mutation returns the EntitlementMutation object of the builder.
 func (_c *EntitlementCreate) Mutation() *EntitlementMutation {
 	return _c.mutation
@@ -162,6 +176,10 @@ func (_c *EntitlementCreate) createSpec() (*Entitlement, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Reason(); ok {
 		_spec.SetField(entitlement.FieldReason, field.TypeString, value)
 		_node.Reason = value
+	}
+	if value, ok := _c.mutation.LastPolledAt(); ok {
+		_spec.SetField(entitlement.FieldLastPolledAt, field.TypeTime, value)
+		_node.LastPolledAt = &value
 	}
 	return _node, _spec
 }

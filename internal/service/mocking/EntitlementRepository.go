@@ -38,6 +38,74 @@ func (_m *EntitlementRepository) EXPECT() *EntitlementRepository_Expecter {
 	return &EntitlementRepository_Expecter{mock: &_m.Mock}
 }
 
+// ClaimCarrierEntitlements provides a mock function for the type EntitlementRepository
+func (_mock *EntitlementRepository) ClaimCarrierEntitlements(ctx context.Context, batchSize int) ([]*domain.Entitlement, error) {
+	ret := _mock.Called(ctx, batchSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ClaimCarrierEntitlements")
+	}
+
+	var r0 []*domain.Entitlement
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) ([]*domain.Entitlement, error)); ok {
+		return returnFunc(ctx, batchSize)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) []*domain.Entitlement); ok {
+		r0 = returnFunc(ctx, batchSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.Entitlement)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = returnFunc(ctx, batchSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// EntitlementRepository_ClaimCarrierEntitlements_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ClaimCarrierEntitlements'
+type EntitlementRepository_ClaimCarrierEntitlements_Call struct {
+	*mock.Call
+}
+
+// ClaimCarrierEntitlements is a helper method to define mock.On call
+//   - ctx context.Context
+//   - batchSize int
+func (_e *EntitlementRepository_Expecter) ClaimCarrierEntitlements(ctx interface{}, batchSize interface{}) *EntitlementRepository_ClaimCarrierEntitlements_Call {
+	return &EntitlementRepository_ClaimCarrierEntitlements_Call{Call: _e.mock.On("ClaimCarrierEntitlements", ctx, batchSize)}
+}
+
+func (_c *EntitlementRepository_ClaimCarrierEntitlements_Call) Run(run func(ctx context.Context, batchSize int)) *EntitlementRepository_ClaimCarrierEntitlements_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *EntitlementRepository_ClaimCarrierEntitlements_Call) Return(entitlements []*domain.Entitlement, err error) *EntitlementRepository_ClaimCarrierEntitlements_Call {
+	_c.Call.Return(entitlements, err)
+	return _c
+}
+
+func (_c *EntitlementRepository_ClaimCarrierEntitlements_Call) RunAndReturn(run func(ctx context.Context, batchSize int) ([]*domain.Entitlement, error)) *EntitlementRepository_ClaimCarrierEntitlements_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindByUserID provides a mock function for the type EntitlementRepository
 func (_mock *EntitlementRepository) FindByUserID(ctx context.Context, userID string) (*domain.Entitlement, error) {
 	ret := _mock.Called(ctx, userID)

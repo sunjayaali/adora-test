@@ -84,6 +84,11 @@ func Reason(v string) predicate.Entitlement {
 	return predicate.Entitlement(sql.FieldEQ(FieldReason, v))
 }
 
+// LastPolledAt applies equality check predicate on the "last_polled_at" field. It's identical to LastPolledAtEQ.
+func LastPolledAt(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldEQ(FieldLastPolledAt, v))
+}
+
 // UserIDEQ applies the EQ predicate on the "user_id" field.
 func UserIDEQ(v string) predicate.Entitlement {
 	return predicate.Entitlement(sql.FieldEQ(FieldUserID, v))
@@ -377,6 +382,56 @@ func ReasonEqualFold(v string) predicate.Entitlement {
 // ReasonContainsFold applies the ContainsFold predicate on the "reason" field.
 func ReasonContainsFold(v string) predicate.Entitlement {
 	return predicate.Entitlement(sql.FieldContainsFold(FieldReason, v))
+}
+
+// LastPolledAtEQ applies the EQ predicate on the "last_polled_at" field.
+func LastPolledAtEQ(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldEQ(FieldLastPolledAt, v))
+}
+
+// LastPolledAtNEQ applies the NEQ predicate on the "last_polled_at" field.
+func LastPolledAtNEQ(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldNEQ(FieldLastPolledAt, v))
+}
+
+// LastPolledAtIn applies the In predicate on the "last_polled_at" field.
+func LastPolledAtIn(vs ...time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldIn(FieldLastPolledAt, vs...))
+}
+
+// LastPolledAtNotIn applies the NotIn predicate on the "last_polled_at" field.
+func LastPolledAtNotIn(vs ...time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldNotIn(FieldLastPolledAt, vs...))
+}
+
+// LastPolledAtGT applies the GT predicate on the "last_polled_at" field.
+func LastPolledAtGT(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldGT(FieldLastPolledAt, v))
+}
+
+// LastPolledAtGTE applies the GTE predicate on the "last_polled_at" field.
+func LastPolledAtGTE(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldGTE(FieldLastPolledAt, v))
+}
+
+// LastPolledAtLT applies the LT predicate on the "last_polled_at" field.
+func LastPolledAtLT(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldLT(FieldLastPolledAt, v))
+}
+
+// LastPolledAtLTE applies the LTE predicate on the "last_polled_at" field.
+func LastPolledAtLTE(v time.Time) predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldLTE(FieldLastPolledAt, v))
+}
+
+// LastPolledAtIsNil applies the IsNil predicate on the "last_polled_at" field.
+func LastPolledAtIsNil() predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldIsNull(FieldLastPolledAt))
+}
+
+// LastPolledAtNotNil applies the NotNil predicate on the "last_polled_at" field.
+func LastPolledAtNotNil() predicate.Entitlement {
+	return predicate.Entitlement(sql.FieldNotNull(FieldLastPolledAt))
 }
 
 // And groups predicates with the AND operator between them.

@@ -15,4 +15,5 @@ type EntitlementRepository interface {
 	FindByUserID(ctx context.Context, userID string) (*domain.Entitlement, error)
 	Insert(ctx context.Context, entitlement *domain.Entitlement) error
 	Update(ctx context.Context, entitlement *domain.Entitlement) error
+	ClaimCarrierEntitlements(ctx context.Context, batchSize int) ([]*domain.Entitlement, error)
 }
