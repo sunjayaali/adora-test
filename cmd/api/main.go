@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +13,7 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/gofiber/fiber/v3"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 	"github.com/samber/lo"
 
 	"adora-test/ent"
@@ -23,7 +25,15 @@ import (
 )
 
 func main() {
-	db := lo.Must(sql.Open("pgx", "postgres://postgres:postgres@postgres:5432/adora?sslmode=disable"))
+	var devMode bool
+	flag.BoolVar(&devMode, "dev", false, "Run in development mode")
+	flag.Parse()
+
+	if devMode {
+		_ = godotenv.Load()
+	}
+
+	db := lo.Must(sql.Open("pgx", os.Getenv("DB_DSN")))
 	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, db)))
 	defer client.Close()
 

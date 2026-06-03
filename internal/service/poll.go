@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"adora-test/internal/data"
 )
@@ -38,7 +39,7 @@ func (p *Poll) Poll(ctx context.Context, userID string) error {
 		case SubscriptionStatusInactive:
 			entitlement.IsActive = false
 		case SubscriptionStatusAPIError:
-
+			return fmt.Errorf("API error for user %s", userID)
 		}
 
 		if err := p.entitlementRepo.Update(ctx, entitlement); err != nil {

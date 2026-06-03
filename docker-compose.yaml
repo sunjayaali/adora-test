@@ -16,3 +16,5 @@ services:
       - postgres
     ports:
       - 8080:3000
+    environment:
+      DB_DSN: postgres://postgres:postgres@postgres:5432/adora?sslmode=disable

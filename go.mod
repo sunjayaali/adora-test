@@ -6,6 +6,7 @@ require (
 	entgo.io/ent v0.14.6
 	github.com/gofiber/fiber/v3 v3.3.0
 	github.com/jackc/pgx/v5 v5.9.2
+	github.com/joho/godotenv v1.5.1
 	github.com/mroth/weightedrand/v3 v3.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.53.0

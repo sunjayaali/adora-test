@@ -38,9 +38,6 @@ func NewWebhookStoreService(repo StoreEventRepository, entitlementRepo Entitleme
 }
 
 func (s WebhookStoreService) Ingest(ctx context.Context, req *IngestStoreWebhookRequest) (*IngestStoreWebhookResponse, error) {
-	eventTime := time.UnixMilli(req.EventTimeMs).UTC()
-	_ = eventTime
-
 	storeEvent, err := s.storeEventRepository.FindByEventID(ctx, req.EventID)
 	if err != nil {
 		return nil, err
