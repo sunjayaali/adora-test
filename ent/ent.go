@@ -4,6 +4,7 @@ package ent
 
 import (
 	"adora-test/ent/entitlement"
+	"adora-test/ent/notification"
 	"adora-test/ent/storeevent"
 	"context"
 	"errors"
@@ -74,8 +75,9 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			entitlement.Table: entitlement.ValidColumn,
-			storeevent.Table:  storeevent.ValidColumn,
+			entitlement.Table:  entitlement.ValidColumn,
+			notification.Table: notification.ValidColumn,
+			storeevent.Table:   storeevent.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

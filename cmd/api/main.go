@@ -42,9 +42,11 @@ func main() {
 
 	entitlementRepo := repositories.NewEntitlement(entManager)
 	storeEventRepo := repositories.NewStoreEventRepository(entManager)
+	notificationRepo := repositories.NewNotification(entManager)
 
 	webhookService := service.NewWebhookStoreService(storeEventRepo, entitlementRepo, entManager)
 	entitlementService := service.NewEntitlementService(entitlementRepo)
+	notificationService := service.NewNotification(entitlementRepo, notificationRepo)
 
 	ts := lo.Must(mockcarrier.NewServer())
 	defer ts.Close()
@@ -139,6 +141,14 @@ func main() {
 		StartScheduler(ctx, pollWorker)
 	}()
 
+	go func() {
+		StartNotifcationScheduler(ctx, notificationService)
+	}()
+
+	go func() {
+		StartNotificationSender(ctx, notificationService)
+	}()
+
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(shutdown)
@@ -152,7 +162,7 @@ func main() {
 func StartScheduler(ctx context.Context, worker *service.PollWorker) {
 	interval := 5 * time.Minute
 	// Use a shorter interval for testing purposes
-	// interval := 10 * time.Second
+	// interval = 10 * time.Second
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -164,6 +174,44 @@ func StartScheduler(ctx context.Context, worker *service.PollWorker) {
 		}
 
 		_ = worker.Run(ctx)
+		<-ticker.C
+	}
+}
+
+func StartNotifcationScheduler(ctx context.Context, notificationService *service.Notification) {
+	interval := 1 * time.Hour
+	// Use a shorter interval for testing purposes
+	interval = 10 * time.Second
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		_ = notificationService.ScheduleExpiringNotifications(ctx)
+		<-ticker.C
+	}
+}
+
+func StartNotificationSender(ctx context.Context, notificationService *service.Notification) {
+	interval := 1 * time.Hour
+	// Use a shorter interval for testing purposes
+	interval = 10 * time.Second
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		_ = notificationService.SendDueNotifications(ctx)
 		<-ticker.C
 	}
 }

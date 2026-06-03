@@ -32,6 +32,28 @@ var (
 			},
 		},
 	}
+	// NotificationsColumns holds the columns for the "notifications" table.
+	NotificationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "scheduled_for", Type: field.TypeTime},
+		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
+	}
+	// NotificationsTable holds the schema information for the "notifications" table.
+	NotificationsTable = &schema.Table{
+		Name:       "notifications",
+		Columns:    NotificationsColumns,
+		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "notification_user_id_type_expires_at",
+				Unique:  true,
+				Columns: []*schema.Column{NotificationsColumns[1], NotificationsColumns[2], NotificationsColumns[3]},
+			},
+		},
+	}
 	// StoreEventsColumns holds the columns for the "store_events" table.
 	StoreEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -58,6 +80,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		EntitlementsTable,
+		NotificationsTable,
 		StoreEventsTable,
 	}
 )

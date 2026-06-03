@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"adora-test/ent/notification"
 	"adora-test/ent/schema"
 	"adora-test/ent/storeevent"
 	"time"
@@ -12,6 +13,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	notificationFields := schema.Notification{}.Fields()
+	_ = notificationFields
+	// notificationDescUserID is the schema descriptor for user_id field.
+	notificationDescUserID := notificationFields[0].Descriptor()
+	// notification.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	notification.UserIDValidator = notificationDescUserID.Validators[0].(func(string) error)
 	storeeventFields := schema.StoreEvent{}.Fields()
 	_ = storeeventFields
 	// storeeventDescReceivedAt is the schema descriptor for received_at field.

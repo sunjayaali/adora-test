@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Entitlement is the client for interacting with the Entitlement builders.
 	Entitlement *EntitlementClient
+	// Notification is the client for interacting with the Notification builders.
+	Notification *NotificationClient
 	// StoreEvent is the client for interacting with the StoreEvent builders.
 	StoreEvent *StoreEventClient
 
@@ -148,6 +150,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Entitlement = NewEntitlementClient(tx.config)
+	tx.Notification = NewNotificationClient(tx.config)
 	tx.StoreEvent = NewStoreEventClient(tx.config)
 }
 

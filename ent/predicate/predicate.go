@@ -9,5 +9,8 @@ import (
 // Entitlement is the predicate function for entitlement builders.
 type Entitlement func(*sql.Selector)
 
+// Notification is the predicate function for notification builders.
+type Notification func(*sql.Selector)
+
 // StoreEvent is the predicate function for storeevent builders.
 type StoreEvent func(*sql.Selector)

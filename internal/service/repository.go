@@ -3,6 +3,7 @@ package service
 import (
 	"adora-test/internal/domain"
 	"context"
+	"time"
 )
 
 type StoreEventRepository interface {
@@ -16,4 +17,11 @@ type EntitlementRepository interface {
 	Insert(ctx context.Context, entitlement *domain.Entitlement) error
 	Update(ctx context.Context, entitlement *domain.Entitlement) error
 	ClaimCarrierEntitlements(ctx context.Context, batchSize int) ([]*domain.Entitlement, error)
+	FindExpiring(ctx context.Context, before time.Time) ([]*domain.Entitlement, error)
+}
+
+type NotificationRepository interface {
+	Insert(ctx context.Context, notification *domain.Notification) error
+	FindDue(ctx context.Context, now time.Time) ([]*domain.Notification, error)
+	Update(ctx context.Context, notification *domain.Notification) error
 }

@@ -9,6 +9,7 @@ import (
 
 	"adora-test/ent"
 	"adora-test/ent/entitlement"
+	"adora-test/ent/notification"
 	"adora-test/internal/data"
 	"adora-test/internal/domain"
 	"adora-test/internal/service"
@@ -113,6 +114,44 @@ func (e Entitlement) ClaimCarrierEntitlements(ctx context.Context, limit int) ([
 	for _, r := range rows {
 		d := e.toDomain(r)
 		d.LastPolledAt = &now
+		result = append(result, d)
+	}
+
+	return result, nil
+}
+
+func (r Entitlement) FindExpiring(ctx context.Context, before time.Time) ([]*domain.Entitlement, error) {
+	rows, err := r.manager.Client(ctx).Entitlement.
+		Query().
+		Where(func(s *sql.Selector) {
+			n := sql.Table(notification.Table)
+
+			s.LeftJoin(n).
+				On(s.C(entitlement.FieldUserID), n.C(notification.FieldUserID)).
+				Where(
+					sql.And(
+						sql.EQ(s.C(entitlement.FieldIsActive), true),
+						sql.NotNull(s.C(entitlement.FieldExpiresAt)),
+						sql.LTE(s.C(entitlement.FieldExpiresAt), before),
+						sql.Or(
+							sql.IsNull(n.C(notification.FieldID)),
+							sql.And(sql.EQ(n.C(notification.FieldType), "PREMIUM_EXPIRES_SOON"),
+								sql.Not(
+									sql.ColumnsEQ(s.C(entitlement.FieldExpiresAt), n.C(notification.FieldExpiresAt)),
+								),
+							),
+						),
+					),
+				)
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	result := make([]*domain.Entitlement, 0, len(rows))
+	for _, row := range rows {
+		d := r.toDomain(row)
 		result = append(result, d)
 	}
 
